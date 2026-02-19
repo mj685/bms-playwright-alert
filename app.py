@@ -24,7 +24,7 @@ async def check_ticket():
 
         content = await page.content()
 
-        if "Book Tickets" in content and not alert_sent:
+        if not alert_sent:
             send_email()
             alert_sent = True
 
