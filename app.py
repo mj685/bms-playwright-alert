@@ -12,32 +12,35 @@ RECIPIENT_EMAILS = os.getenv("RECIPIENT_EMAILS")
 
 alert_sent = False
 
+def log(msg):
+    print(msg, flush=True)
+
 async def check_ticket():
     global alert_sent
 
-    print("Checking ticket availability...")
+    log("Checking ticket availability...")
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
 
-        print("Opening page...")
+        log("Opening page...")
         await page.goto(EVENT_URL, timeout=60000)
-        await page.wait_for_timeout(10000)
+        await page.wait_for_timeout(8000)
 
         content = await page.content()
 
-        print("Page loaded.")
+        log("Page loaded successfully.")
 
         if not alert_sent:
-            print("Triggering test email...")
+            log("Triggering test email...")
             send_email()
             alert_sent = True
 
         await browser.close()
 
 def send_email():
-    print("Sending email...")
+    log("Sending email...")
 
     subject = "🚨 Test Email - BMS Alert Working"
     body = f"Test successful!\n\nURL:\n{EVENT_URL}"
@@ -57,18 +60,18 @@ def send_email():
     )
     server.quit()
 
-    print("Email sent successfully!")
+    log("Email sent successfully!")
 
 async def main():
-    print("Monitor started...")
+    log("Monitor started...")
 
     while True:
         try:
             await check_ticket()
         except Exception as e:
-            print("Error:", e)
+            log(f"Error occurred: {e}")
 
-        print("Sleeping 60 seconds...")
+        log("Sleeping for 60 seconds...")
         await asyncio.sleep(60)
 
 if __name__ == "__main__":
