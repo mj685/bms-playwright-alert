@@ -15,27 +15,32 @@ alert_sent = False
 async def check_ticket():
     global alert_sent
 
+    print("Checking ticket availability...")
+
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
 
+        print("Opening page...")
         await page.goto(EVENT_URL, timeout=60000)
         await page.wait_for_timeout(10000)
 
         content = await page.content()
 
+        print("Page loaded.")
+
         if not alert_sent:
+            print("Triggering test email...")
             send_email()
             alert_sent = True
-
-        if "Coming Soon" in content:
-            alert_sent = False
 
         await browser.close()
 
 def send_email():
-    subject = "🚨 Tickets LIVE for Super 8 Match 8"
-    body = f"Tickets are LIVE!\n\nBook now:\n{EVENT_URL}"
+    print("Sending email...")
+
+    subject = "🚨 Test Email - BMS Alert Working"
+    body = f"Test successful!\n\nURL:\n{EVENT_URL}"
 
     msg = MIMEText(body)
     msg["Subject"] = subject
@@ -52,13 +57,18 @@ def send_email():
     )
     server.quit()
 
+    print("Email sent successfully!")
+
 async def main():
+    print("Monitor started...")
+
     while True:
         try:
             await check_ticket()
         except Exception as e:
             print("Error:", e)
 
+        print("Sleeping 60 seconds...")
         await asyncio.sleep(60)
 
 if __name__ == "__main__":
